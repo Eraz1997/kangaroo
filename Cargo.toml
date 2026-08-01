@@ -6,10 +6,17 @@ workspace = { members = [
 name = "kangaroo"
 version = "0.1.0"
 edition = "2024"
+categories = ["asynchronous", "network-programming", "web-programming"]
+description = "Kangaroos carry puppies in their pouches. `kangaroo` carries server-side data in static web applications, served by Axum."
+homepage = "https://github.com/Eraz1997/kangaroo"
+keywords = ["kangaroo"]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/Eraz1997/kangaroo"
 
 [dependencies]
 axum = "0.8.9"
-kangaroo_macros = { path = "./kangaroo_macros" }
+kangaroo_macros = { path = "./kangaroo_macros", version = "0.1.0" }
 regex = "1.13.1"
 serde = { version = "1.0.229", features = ["derive"] }
 serde_json = "1.0.151"

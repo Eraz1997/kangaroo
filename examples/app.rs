@@ -50,7 +50,7 @@ async fn main() {
         .route("/", get(get_home))
         .route("/users/{username}", get(get_user))
         .with_kangaroo(
-            &KangarooConfig::new("examples/static")
+            KangarooConfig::new("examples/static")
                 .with_document_for_status(StatusCode::NOT_FOUND, "404.html"),
         );
 

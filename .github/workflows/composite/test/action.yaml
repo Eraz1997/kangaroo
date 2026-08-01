@@ -19,3 +19,10 @@ runs:
       shell: bash -euo pipefail {0}
       run: |
         cargo test
+    
+    - name: Check Docs
+      shell: bash -euo pipefail {0}
+      run: |
+        cargo doc --all-features --no-deps
+      env:
+        RUSTDOCFLAGS: "-D rustdoc::all -A rustdoc::private-doc-tests"

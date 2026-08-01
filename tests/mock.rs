@@ -28,7 +28,7 @@ pub fn create_mock_app() -> Router {
         .route("/deleted", get(get_deleted_resource))
         .route("/deleted-custom", get(get_custom_deleted_resource))
         .with_kangaroo(
-            &KangarooConfig::new("tests/static")
+            KangarooConfig::new("tests/static")
                 .with_document_for_status(StatusCode::GONE, "gone.html"),
         )
 }

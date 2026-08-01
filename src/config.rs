@@ -2,6 +2,31 @@ use std::{collections::HashMap, path::MAIN_SEPARATOR_STR};
 
 use axum::http::StatusCode;
 
+/**
+Configuration for Kangaroo
+
+Basic usage:
+
+```ignore
+KangarooConfig::new("path/to/public/assets/")
+```
+
+The default document is `path/to/public/assets/index.html`. To set another default:
+
+```ignore
+KangarooConfig::new("public/")
+    .with_default_document("default.html")
+```
+
+You can set specific document paths for each HTTP response status code coming from your `Error` objects:
+
+```ignore
+use axum::http::StatusCode;
+
+KangarooConfig::new("public/")
+    .with_document_for_status(StatusCode::NOT_FOUND, "404.html")
+    .with_document_for_status(StatusCode::INTERNAL_SERVER_ERROR, "5xx.html")
+*/
 #[derive(Clone)]
 pub struct KangarooConfig {
     static_files_folder_path: String,

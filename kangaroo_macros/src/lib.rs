@@ -10,6 +10,41 @@ use crate::{
 mod models;
 mod parsers;
 
+/**
+Macro to "kangarooise" your endpoints. Tagged endpoints are required to return an object implementing `Serialize` (`()` is allowed),
+and they return HTML pages with the serialised object injected as JSON script.
+
+Basic usage:
+
+```ignore
+#[kangarooise]
+async fn get_home() -> HomeData {
+    // ...
+}
+```
+
+If your error type implements `IntoKangarooError`, Kangaroo can gracefully handle your errors:
+
+```ignore
+#[kangarooise]
+async fn get_home() -> Result<HomeData, Error> {
+    // ...
+}
+```
+
+You can also set document path overrides for each route:
+
+```ignore
+#[kangarooise(
+    file = "home/index.html"
+    not_found = "home/404.html"
+    internal_server_error = "home/5xx.html"
+)]
+async fn get_home() -> Result<HomeData, Error> {
+    // ...
+}
+```
+*/
 #[proc_macro_attribute]
 pub fn kangarooise(attributes: TokenStream, item: TokenStream) -> TokenStream {
     kangarooise2(attributes.into(), item.into()).into()

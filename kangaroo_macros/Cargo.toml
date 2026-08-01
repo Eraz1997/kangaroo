@@ -2,6 +2,13 @@
 name = "kangaroo_macros"
 version = "0.1.0"
 edition = "2024"
+categories = ["asynchronous", "network-programming", "web-programming"]
+description = "Macros for kangaroo"
+homepage = "https://github.com/Eraz1997/kangaroo"
+keywords = ["kangaroo"]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/Eraz1997/kangaroo"
 
 [lib]
 proc-macro = true
