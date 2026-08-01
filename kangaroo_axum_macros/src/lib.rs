@@ -76,7 +76,7 @@ fn kangarooise2(
     };
 
     let additional_input: FnArg = parse_quote! {
-        kangaroo::exports::axum::Extension(config): kangaroo::exports::axum::Extension<kangaroo::KangarooConfig>
+        kangaroo_axum::exports::axum::Extension(config): kangaroo_axum::exports::axum::Extension<kangaroo_axum::KangarooConfig>
     };
     inputs.insert(0, additional_input);
 
@@ -84,25 +84,25 @@ fn kangarooise2(
         quote! {
             let (status_code, kangaroo_data) = match kangaroo_data {
                 Ok(kangaroo_data) => {
-                    let kangaroo_data = kangaroo::exports::serde_json::to_string(&kangaroo_data);
-                    (kangaroo::exports::axum::http::StatusCode::OK, kangaroo_data)
+                    let kangaroo_data = kangaroo_axum::exports::serde_json::to_string(&kangaroo_data);
+                    (kangaroo_axum::exports::axum::http::StatusCode::OK, kangaroo_data)
                 },
                 Err(error) => {
                     let (status_code, error_payload) = error.into_kangaroo_error();
-                    let kangaroo_data = kangaroo::exports::serde_json::to_string(&error_payload);
+                    let kangaroo_data = kangaroo_axum::exports::serde_json::to_string(&error_payload);
                     (status_code, kangaroo_data)
                 }
             };
         }
     } else {
         quote! {
-            let status_code = kangaroo::exports::axum::http::StatusCode::OK;
-            let kangaroo_data = kangaroo::exports::serde_json::to_string(&kangaroo_data);
+            let status_code = kangaroo_axum::exports::axum::http::StatusCode::OK;
+            let kangaroo_data = kangaroo_axum::exports::serde_json::to_string(&kangaroo_data);
         }
     };
 
     let custom_file_matches_body: Vec<proc_macro2::TokenStream> = arguments.custom_files.into_iter().map(|(status_code_ident, file)| quote! {
-        kangaroo::exports::axum::http::StatusCode::#status_code_ident => config.get_full_path_from_relative(#file),
+        kangaroo_axum::exports::axum::http::StatusCode::#status_code_ident => config.get_full_path_from_relative(#file),
     }).collect();
 
     let default_html_path = match arguments.default_file {
@@ -112,7 +112,7 @@ fn kangarooise2(
 
     quote! {
         #(#attrs)*
-        #vis #asyncness fn #ident #generics (#inputs) -> kangaroo::exports::axum::response::Response #where_clause {
+        #vis #asyncness fn #ident #generics (#inputs) -> kangaroo_axum::exports::axum::response::Response #where_clause {
             let get_kangaroo_data = async move || {
                 #block
             };
@@ -123,10 +123,10 @@ fn kangarooise2(
 
             let json_data = match kangaroo_data {
                 Ok(json_data) => json_data,
-                Err(_) => return kangaroo::exports::axum::response::Response::builder()
-                    .status(kangaroo::exports::axum::http::StatusCode::INTERNAL_SERVER_ERROR)
+                Err(_) => return kangaroo_axum::exports::axum::response::Response::builder()
+                    .status(kangaroo_axum::exports::axum::http::StatusCode::INTERNAL_SERVER_ERROR)
                     .header("Content-Type", "text/plain")
-                    .body(kangaroo::exports::axum::body::Body::from("JSON serialization error"))
+                    .body(kangaroo_axum::exports::axum::body::Body::from("JSON serialization error"))
                     .unwrap(),
             };
 
@@ -137,38 +137,38 @@ fn kangarooise2(
                 _ => config.get_full_path_from_status_code(status_code).unwrap_or(#default_html_path),
             };
 
-            let mut html_document = match kangaroo::exports::tokio::fs::read_to_string(html_file_path).await {
+            let mut html_document = match kangaroo_axum::exports::tokio::fs::read_to_string(html_file_path).await {
                 Ok(html_document) => html_document,
-                Err(_) => return kangaroo::exports::axum::response::Response::builder()
-                    .status(kangaroo::exports::axum::http::StatusCode::INTERNAL_SERVER_ERROR)
+                Err(_) => return kangaroo_axum::exports::axum::response::Response::builder()
+                    .status(kangaroo_axum::exports::axum::http::StatusCode::INTERNAL_SERVER_ERROR)
                     .header("Content-Type", "text/plain")
-                    .body(kangaroo::exports::axum::body::Body::from("error reading document"))
+                    .body(kangaroo_axum::exports::axum::body::Body::from("error reading document"))
                     .unwrap(),
             };
 
-            let re = match kangaroo::exports::regex::Regex::new(r"(?i)<head\b[^>]*>") {
+            let re = match kangaroo_axum::exports::regex::Regex::new(r"(?i)<head\b[^>]*>") {
                 Ok(re) => re,
-                Err(_) => return kangaroo::exports::axum::response::Response::builder()
-                    .status(kangaroo::exports::axum::http::StatusCode::INTERNAL_SERVER_ERROR)
+                Err(_) => return kangaroo_axum::exports::axum::response::Response::builder()
+                    .status(kangaroo_axum::exports::axum::http::StatusCode::INTERNAL_SERVER_ERROR)
                     .header("Content-Type", "text/plain")
-                    .body(kangaroo::exports::axum::body::Body::from("regex compilation error"))
+                    .body(kangaroo_axum::exports::axum::body::Body::from("regex compilation error"))
                     .unwrap(),
             };
 
             if let Some(matching_group) = re.find(&html_document) {
                 html_document.insert_str(matching_group.end(), &injected_script);
             } else {
-                return kangaroo::exports::axum::response::Response::builder()
-                    .status(kangaroo::exports::axum::http::StatusCode::INTERNAL_SERVER_ERROR)
+                return kangaroo_axum::exports::axum::response::Response::builder()
+                    .status(kangaroo_axum::exports::axum::http::StatusCode::INTERNAL_SERVER_ERROR)
                     .header("Content-Type", "text/plain")
-                    .body(kangaroo::exports::axum::body::Body::from("invalid html document"))
+                    .body(kangaroo_axum::exports::axum::body::Body::from("invalid html document"))
                     .unwrap();
             }
 
-            kangaroo::exports::axum::response::Response::builder()
+            kangaroo_axum::exports::axum::response::Response::builder()
                 .status(status_code)
                 .header("Content-Type", "text/html")
-                .body(kangaroo::exports::axum::body::Body::from(html_document))
+                .body(kangaroo_axum::exports::axum::body::Body::from(html_document))
                 .unwrap()
         }
     }

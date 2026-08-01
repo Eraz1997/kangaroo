@@ -1,5 +1,5 @@
 use axum::{Router, extract::Path, http::StatusCode, routing::get};
-use kangaroo::{IntoKangarooError, KangarooConfig, KangarooRouterExtension, kangarooise};
+use kangaroo_axum::{IntoKangarooError, KangarooConfig, KangarooRouterExtension, kangarooise};
 use serde::Serialize;
 
 #[derive(Serialize)]

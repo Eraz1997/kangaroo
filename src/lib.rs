@@ -11,7 +11,7 @@ To easily get started, add the following in your existing Axum app as a bare min
 
 ```ignore
 // Imports 👇
-use kangaroo::{IntoKangarooError, KangarooConfig, KangarooRouterExtension, kangarooise};
+use kangaroo_axum::{IntoKangarooError, KangarooConfig, KangarooRouterExtension, kangarooise};
 
 // ...
 
@@ -133,7 +133,7 @@ The precedence order for the document to load is the following, from top to bott
 */
 
 pub use config::KangarooConfig;
-pub use kangaroo_macros::kangarooise;
+pub use kangaroo_axum_macros::kangarooise;
 pub use router::KangarooRouterExtension;
 pub use traits::IntoKangarooError;
 

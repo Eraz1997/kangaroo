@@ -6,13 +6,19 @@ This Rust crate allows you to serve static web applications and inject server-si
 
 ## Usage 🪿
 
+### Setup 🪛
+
+```shell
+cargo add kangaroo-axum
+```
+
 ### Basics 🍍
 
 To easily get started, add the following in your existing Axum app as a bare minimum setup:
 
 ```rust
 // Imports 👇
-use kangaroo::{IntoKangarooError, KangarooConfig, KangarooRouterExtension, kangarooise};
+use kangaroo_axum::{IntoKangarooError, KangarooConfig, KangarooRouterExtension, kangarooise};
 
 // ...
 
