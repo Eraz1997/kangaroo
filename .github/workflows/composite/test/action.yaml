@@ -9,8 +9,13 @@ runs:
         curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
         echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
-    - name: Lint Backend
+    - name: Lint
       shell: bash -euo pipefail {0}
       run: |
-        cargo fmt --check
-        cargo clippy -- --deny warnings
+        cargo fmt --check --all
+        cargo clippy --workspace --all-targets -- --deny warnings
+
+    - name: Test
+      shell: bash -euo pipefail {0}
+      run: |
+        cargo test

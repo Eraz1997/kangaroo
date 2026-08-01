@@ -21,9 +21,10 @@ This Rust crate allows you to serve static web applications and inject server-si
 cargo run --example <example-name>
 ```
 
-### Lint and Format 🧽
+### Lint, Format and Test 🧽
 
 ```sh
-cargo fmt
-cargo clippy -- --deny warnings
+cargo fmt --all
+cargo clippy --workspace --all-targets -- --deny warnings
+cargo test
 ```
