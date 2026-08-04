@@ -75,10 +75,17 @@ fn kangarooise2(
         Err(error) => return error.write_errors(),
     };
 
-    let additional_input: FnArg = parse_quote! {
-        kangaroo_axum::exports::axum::Extension(config): kangaroo_axum::exports::axum::Extension<kangaroo_axum::KangarooConfig>
-    };
-    inputs.insert(0, additional_input);
+    let additional_inputs: &[FnArg] = &[
+        parse_quote! {
+            kangaroo_axum::exports::axum::Extension(config): kangaroo_axum::exports::axum::Extension<kangaroo_axum::KangarooConfig>
+        },
+        parse_quote! {
+            kangaroo_axum::exports::axum::Extension(frontend_development_server_client): kangaroo_axum::exports::axum::Extension<Option<kangaroo_axum::FrontendDevelopmentServerClient>>
+        },
+    ];
+    for additional_input in additional_inputs {
+        inputs.insert(0, additional_input.to_owned());
+    }
 
     let result_handling_body = if is_result_return_type {
         quote! {
@@ -137,13 +144,17 @@ fn kangarooise2(
                 _ => config.get_full_path_from_status_code(status_code).unwrap_or(#default_html_path),
             };
 
-            let mut html_document = match kangaroo_axum::exports::tokio::fs::read_to_string(html_file_path).await {
-                Ok(html_document) => html_document,
-                Err(_) => return kangaroo_axum::exports::axum::response::Response::builder()
-                    .status(kangaroo_axum::exports::axum::http::StatusCode::INTERNAL_SERVER_ERROR)
-                    .header("Content-Type", "text/plain")
-                    .body(kangaroo_axum::exports::axum::body::Body::from("error reading document"))
-                    .unwrap(),
+            let mut html_document = if let Some(frontend_development_server_client) = frontend_development_server_client {
+                frontend_development_server_client.get_response_content(&html_file_path).await
+            } else {
+                match kangaroo_axum::exports::tokio::fs::read_to_string(html_file_path).await {
+                    Ok(html_document) => html_document,
+                    Err(_) => return kangaroo_axum::exports::axum::response::Response::builder()
+                        .status(kangaroo_axum::exports::axum::http::StatusCode::INTERNAL_SERVER_ERROR)
+                        .header("Content-Type", "text/plain")
+                        .body(kangaroo_axum::exports::axum::body::Body::from("error reading document"))
+                        .unwrap(),
+                }
             };
 
             let re = match kangaroo_axum::exports::regex::Regex::new(r"(?i)<head\b[^>]*>") {

@@ -1,4 +1,4 @@
-user_data = JSON.parse(document.getElementById("kangaroo-data").innerText);
+user_data = JSON.parse(document.getElementById("kangaroo-data")?.textContent ?? null);
 if (user_data.message) {
     document.getElementById("error").innerText = user_data.message;
 } else {

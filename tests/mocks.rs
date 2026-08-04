@@ -1,6 +1,8 @@
-use axum::{Router, extract::Path, http::StatusCode, routing::get};
+use axum::{Router, extract::Path, http::StatusCode, routing::get, serve};
 use kangaroo_axum::{IntoKangarooError, KangarooConfig, KangarooRouterExtension, kangarooise};
 use serde::Serialize;
+use tokio::{net::TcpListener, spawn, task::JoinHandle};
+use tower_http::services::ServeDir;
 
 #[derive(Serialize)]
 struct ExampleData {
@@ -17,11 +19,16 @@ impl IntoKangarooError for Error {
     }
 }
 
-pub fn create_mock_app() -> Router {
+pub struct MockFrontendDevelopmentServer {
+    pub address: String,
+    _task_handle: JoinHandle<()>,
+}
+
+pub fn create_mock_app(frontend_dev_server_uri: Option<&str>) -> Router {
     Router::new()
         .route("/", get(get_home))
         .route("/404", get(get_not_found))
-        .route("/{resource}", get(get_resource))
+        .route("/resources/{resource}", get(get_resource))
         .route("/custom", get(get_custom))
         .route("/absent-document", get(get_absent_document))
         .route("/invalid-document", get(get_invalid_document))
@@ -29,8 +36,31 @@ pub fn create_mock_app() -> Router {
         .route("/deleted-custom", get(get_custom_deleted_resource))
         .with_kangaroo(
             KangarooConfig::new("tests/static")
-                .with_document_for_status(StatusCode::GONE, "gone.html"),
+                .with_document_for_status(StatusCode::GONE, "gone.html")
+                .with_frontend_development_server(frontend_dev_server_uri),
         )
+}
+
+pub async fn create_mock_frontend_dev_server() -> MockFrontendDevelopmentServer {
+    let app = Router::new().fallback_service(ServeDir::new("tests/static_frontend_dev_server"));
+
+    let listener = TcpListener::bind("127.0.0.1:0")
+        .await
+        .expect("failed to start mock frontend dev server");
+    let address = listener
+        .local_addr()
+        .expect("failed to extract mock frontend dev server address")
+        .to_string();
+    let task_handle = spawn(async move {
+        serve(listener, app.clone().into_make_service())
+            .await
+            .expect("failed to serve mock frontend dev server");
+    });
+
+    MockFrontendDevelopmentServer {
+        address: format!("http://{}", address),
+        _task_handle: task_handle,
+    }
 }
 
 #[kangarooise]

@@ -45,10 +45,58 @@ async fn get_home() -> HomeData {
 And in your frontend JavaScript code, add the following to retrieve the server-side injected data:
 
 ```js
-const data = JSON.parse(document.getElementById("kangaroo-data").innerText);
+const data = JSON.parse(document.getElementById("kangaroo-data")?.textContent ?? null);
 ```
 
 Requests to `/` will return the content of `index.html` with an injected JSON script with ID `kangaroo-data` containing your server-side data.
+
+### Single-page Applications 🪨
+
+In single-page applications with client-side routing, Kangaroo data is fetched when a given URL is browsed, but not when navigation to that page is triggered by the client router or its links. Therefore, it's recommended to handle these cases by making the data consumable only once and fall back to APIs if it's already consumed.
+
+For example, you could use a context in SolidJS:
+
+```typescript
+type KangarooData = {
+    getData: () => unknown;
+};
+
+const KANGAROO_DATA = JSON.parse(document.getElementById("kangaroo-data")?.textContent ?? null);
+const KangarooContext = createContext<KangarooData | undefined>();
+
+export function useKangaroo() {
+    const context = useContext(KangarooContext);
+
+    if (!context) {
+        throw new Error("useKangaroo must be used inside KangarooProvider");
+    }
+
+    return context;
+}
+
+export const KangarooProvider = (props: { children: JSX.Element }) => {
+    const [consumed, setIsConsumed] = createSignal<boolean>(false);
+
+    return (
+        <KangarooContext.Provider value={{
+            getData: () => {
+                const wasConsumed = consumed();
+                setIsConsumed(true);
+                return wasConsumed ? null : KANGAROO_DATA;
+            }
+        }}>
+            {props.children}
+        </KangarooContext.Provider>
+    );
+};
+```
+
+and then consume it with API fallback
+
+```typescript
+const kangaroo = useKangaroo();
+const [data] = createResource(async () => kangaroo.getData() ?? await (await fetch("/your/apis")).json());
+```
 
 ### Error Handling 👎
 
@@ -130,14 +178,43 @@ The precedence order for the document to load is the following, from top to bott
         .with_default_document("home.html")
     ```
 5. `index.html`
+
+### Frontend Development Servers 🎒
+
+If you're serving your frontend locally using a development server like Vite's, you can make Kangaroo forward requests to it instead of loading static files:
+
+```ignore
+KangarooConfig::new("public/")
+    .with_frontend_development_server(Some("http://127.0.0.1:3000"))
+```
+
+Since you'll access frontend pages through the backend proxy, hot module reloading may break, if in use. Therefore, make sure to set the frontend development server configuration properly to force HMR target the correct port. For instance, in Vite, you can set:
+
+```typescript
+import { defineConfig } from "vite";
+
+export default defineConfig({
+    server: {
+        port: 3000,
+        hmr: {
+            protocol: "ws",
+            host: "localhost",
+            port: 3000,
+        },
+    },
+    // ...
+});
+```
 */
 
 pub use config::KangarooConfig;
+pub use frontend_dev_server_client::FrontendDevelopmentServerClient;
 pub use kangaroo_axum_macros::kangarooise;
 pub use router::KangarooRouterExtension;
 pub use traits::IntoKangarooError;
 
 mod config;
+mod frontend_dev_server_client;
 mod router;
 mod traits;
 

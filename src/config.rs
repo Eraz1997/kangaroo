@@ -32,6 +32,7 @@ pub struct KangarooConfig {
     static_files_folder_path: String,
     default_document_path: String,
     custom_document_paths: HashMap<StatusCode, String>,
+    frontend_development_server_url: Option<String>,
 }
 
 impl KangarooConfig {
@@ -40,6 +41,7 @@ impl KangarooConfig {
             static_files_folder_path: static_files_folder_path.to_string(),
             default_document_path: "index.html".to_string(),
             custom_document_paths: HashMap::new(),
+            frontend_development_server_url: None,
         }
     }
 
@@ -55,6 +57,14 @@ impl KangarooConfig {
     ) -> Self {
         self.custom_document_paths
             .insert(status_code, relative_path.to_string());
+        self
+    }
+
+    pub fn with_frontend_development_server(
+        mut self,
+        development_server_url: Option<&str>,
+    ) -> Self {
+        self.frontend_development_server_url = development_server_url.map(String::from);
         self
     }
 
@@ -85,5 +95,9 @@ impl KangarooConfig {
 
     pub fn get_folder_path(&self) -> String {
         self.static_files_folder_path.clone()
+    }
+
+    pub fn get_frontend_development_server_url(&self) -> Option<String> {
+        self.frontend_development_server_url.clone()
     }
 }
