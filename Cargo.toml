@@ -4,7 +4,7 @@ workspace = { members = [
 
 [package]
 name = "kangaroo_axum"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 categories = ["asynchronous", "network-programming", "web-programming"]
 description = "Kangaroos carry puppies in their pouches. `kangaroo` carries server-side data in static web applications, served by Axum."
@@ -17,7 +17,7 @@ repository = "https://github.com/Eraz1997/kangaroo"
 [dependencies]
 axum = "0.8.9"
 http-body-util = "0.1.4"
-kangaroo_axum_macros = { path = "./kangaroo_axum_macros", version = "0.1.0" }
+kangaroo_axum_macros = { path = "./kangaroo_axum_macros", version = "0.2.0" }
 regex = "1.13.1"
 reqwest = "0.13.4"
 serde = { version = "1.0.229", features = ["derive"] }

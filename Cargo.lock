@@ -705,7 +705,7 @@ dependencies = [
 
 [[package]]
 name = "kangaroo_axum"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "axum",
  "http-body-util",
@@ -721,7 +721,7 @@ dependencies = [
 
 [[package]]
 name = "kangaroo_axum_macros"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "darling",
  "proc-macro2",
